@@ -1,30 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hello World</title>
-    <url>/2024/08/20/hello-world/</url>
-    <content><![CDATA[<p>Welcome to <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlvLw==">Hexo<i class="fa fa-external-link-alt"></i></span>! This is your very first post. Check <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlvL2RvY3Mv">documentation<i class="fa fa-external-link-alt"></i></span> for more info. If you get any problems when using Hexo, you can find the answer in <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlvL2RvY3MvdHJvdWJsZXNob290aW5nLmh0bWw=">troubleshooting<i class="fa fa-external-link-alt"></i></span> or you can ask me on <span class="exturl" data-url="aHR0cHM6Ly9naXRodWIuY29tL2hleG9qcy9oZXhvL2lzc3Vlcw==">GitHub<i class="fa fa-external-link-alt"></i></span>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><span id="more"></span>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></tbody></table></figure>
-
-<p>More info: <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlvL2RvY3Mvd3JpdGluZy5odG1s">Writing<i class="fa fa-external-link-alt"></i></span></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></tbody></table></figure>
-
-<p>More info: <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlvL2RvY3Mvc2VydmVyLmh0bWw=">Server<i class="fa fa-external-link-alt"></i></span></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></tbody></table></figure>
-
-<p>More info: <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlvL2RvY3MvZ2VuZXJhdGluZy5odG1s">Generating<i class="fa fa-external-link-alt"></i></span></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></tbody></table></figure>
-
-<p>More info: <span class="exturl" data-url="aHR0cHM6Ly9oZXhvLmlvL2RvY3Mvb25lLWNvbW1hbmQtZGVwbG95bWVudC5odG1s">Deployment<i class="fa fa-external-link-alt"></i></span></p>
-]]></content>
-  </entry>
-  <entry>
     <title>如何在 VSCODE 上编辑并编译 C2000 工程</title>
     <url>/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<p>在进行 C2000 开发时，能选择的 IDE 很少，只有 TI 自家的 Code Composer Studio (CCS)，是基于 Eclipse 魔改的。新人在一开始上手使用 CCS 的时候可能会一头雾水，而且 CCS 的代码补全功能非常鸡肋，所以在这里介绍一种在<del>宇宙最强编辑器</del> VSCODE 上编辑并编译 C2000 工程的方法。  </p>
+<span id="more"></span>
+<h2 id="从CCS中导入C2000工程"><a href="#从CCS中导入C2000工程" class="headerlink" title="从CCS中导入C2000工程"></a>从 CCS 中导入 C2000 工程</h2><p>在将工程导入 VSCODE 之前，我们需要先要将工程导入 CCS 中。  </p>
+<h3 id="为什么要先使用CCS导入工程"><a href="#为什么要先使用CCS导入工程" class="headerlink" title="为什么要先使用CCS导入工程"></a>为什么要先使用 CCS 导入工程</h3><p>CCS 编译工程靠的是 makefile 加 gmake 的方式。gmake 是 TI 自己弄的编译器。在 makefile 文件中包括了编译 C2000 工程所需要的所有信息，包括编译器路径、编译器参数、编译顺序等等。每个子文件夹还有自己的 subdir_rules.mk 和 subdir_vars.mk 文件，用来告诉编译器如何编译子文件夹中的文件。在 makefile 和各种.mk 文件中，编译器所需要知道的文件路径大部分都是以相对路径表示的，但是像项目路径，编译器路径，C2000 专用的头文件路径等，都是以绝对路径表示的。在将例程或者别人的工程导入 CCS 之前，这些绝对路径都是错误的，所以我们需要先使用 CCS 导入工程，CCS 会自动修改这些路径，使得工程可以在 CCS 中正常编译。<br>第二个原因则是像 C2000ware 中的例程中是不包含 driverlib 驱动库文件的，使用 CCS 导入后，CCS 会将这些文件添加到工程中，并生成对应的 makefile 文件。  </p>
+<h3 id="如何导入工程"><a href="#如何导入工程" class="headerlink" title="如何导入工程"></a>如何导入工程</h3><ol>
+<li>打开 CCS，点击菜单栏中的 Project -&gt; Import CCS Project，选择要导入的工程文件夹。<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E5%AF%BC%E5%85%A5.png" class="">  </li>
+<li>选择文件夹<br>这里导入 280049 的空工程<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E5%AF%BC%E5%85%A5%E7%A9%BA%E5%B7%A5%E7%A8%8B.png" class="">
+注意事项：<br>在导入的时候记得勾上下面两个选项。<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E6%B3%A8%E6%84%8F%E5%8B%BE%E9%80%89.png" class="">  </li>
+<li>选择 C 语言工程<br>我们开发的时候一般使用 C 语言，所以选择 C 语言工程。勾选第二个工程选项。然后点击 finish 完成导入。  <img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E5%AF%BC%E5%85%A5c%E5%B7%A5%E7%A8%8B.png" class="">  
+完成导入后，CCS 中就有我们的工程了，可以对比一下，CCS 导入后比原文件夹多了不少东西。  <img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E5%AF%B9%E6%AF%94.png" class=""></li>
+</ol>
+<h3 id="在CCS中修改工程"><a href="#在CCS中修改工程" class="headerlink" title="在CCS中修改工程"></a>在 CCS 中修改工程</h3><p>在导入工程后，我们需要在 CCS 中修改工程，比如重命名工程，新增文件夹，设置代码烧录位置等等。<br>但是要记住，以上的操作都要在 CCS 中进行，因为 CCS 在每次编译时都会会自动修改 makefile 文件，使得工程可以在 CCS 中正常编译。如果你在文件资源管理器里面直接修改文件名或文件夹名，makefile 文件中的路径是不会自动更新的，编译器找不到文件，就会报错。<br>在修改完工程后，可以点击菜单栏上面的小锤子编译一下，看看有没有报错。</p>
+<h2 id="将工程导入VSCODE"><a href="#将工程导入VSCODE" class="headerlink" title="将工程导入VSCODE"></a>将工程导入 VSCODE</h2><p>在导入工程的文件夹的空白处右键，选择在 VSCODE 中打开。</p>
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E5%8F%B3%E9%94%AE%E6%89%93%E5%BC%80.png" class="">  
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/vscode.png" class="">  
+<p>在 VSCODE 中的操作分为两步，一个是能让 VSCODE 正常跳转和补全，另一个是能在 VSCODE 的终端里面正常编译。  </p>
+<h3 id="让VSCODE正常跳转和补全"><a href="#让VSCODE正常跳转和补全" class="headerlink" title="让VSCODE正常跳转和补全"></a>让 VSCODE 正常跳转和补全</h3><p>在工程根目录下新建.vscode 文件夹，在.vscode 文件夹下新建 c_cpp_properties.json 文件，文件内容如下：</p>
+<figure class="highlight json"><figcaption><span>c_cpp_properties.json</span></figcaption><table><tbody><tr><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"configurations"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"TI C2000"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"includePath"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">"${workspaceFolder}/**"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"${workspaceFolder}/CPU1_FLASH/syscfg"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"${workspaceFolder}/device/"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"${workspaceFolder}/device/driverlib"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"${workspaceFolder}/device/driverlib/inc"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"C:/ti/ccstheia150/ccs/tools/compiler/ti-cgt-c2000_22.6.1A23259/include"</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"defines"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">                <span class="string">"UNICODE"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"_UNICODE"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"__TMS320C28XX__"</span><span class="punctuation">,</span></span><br><span class="line">                <span class="string">"__interrupt="</span> <span class="comment">// 定义为空，消除红色波浪线</span></span><br><span class="line">            <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"cStandard"</span><span class="punctuation">:</span> <span class="string">"c11"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"compilerPath"</span><span class="punctuation">:</span> <span class="string">"C:/ti/ccstheia150/ccs/tools/compiler/ti-cgt-c2000_22.6.1A23259/bin/cl2000.exe"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"intelliSenseMode"</span><span class="punctuation">:</span> <span class="string">"clang-x64"</span></span><br><span class="line">        <span class="punctuation">}</span></span><br><span class="line">    <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"version"</span><span class="punctuation">:</span> <span class="number">4</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></tbody></table></figure>  
+
+<p>第 6 行到第 21 行是我们要根据工程修改的地方，其余的都是文件框架，直接复制就行。<br>“includePath” 中填写的是编译器搜索头文件的路径。${workspaceFolder} 表示工程根目录，然后依次添加你自己新添加的包括.h 文件的文件夹路径 (我这里没有新建.h 文件以及文件夹，所以只有第 6 行)。<br>第 7 行的 <strong>CPU1_FLASH/syscfg</strong> 是为了包含 syscfg 生成的 board.h 文件。如果你设置的是烧录到 RAM，那路径应该改成 <strong>CPU1_RAM/syscfg</strong>。双核 CPU 同理。<br>下面的三行是包括的 driverlib 文件夹的路径。<br>includePath 的最后一行的路径是 C2000 的 C 标准函数库头文件路径。这个要到 CCS 的安装目录里面找。或者你可以在工程文件里面包含一下标准库的头文件的路径，然后跳转进去，CCS 的标题就会变成该头文件的路径，就像下面这样：  </p>
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E6%A0%87%E5%87%86%E5%BA%93%E5%A4%B4%E6%96%87%E4%BB%B6%E8%B7%AF%E5%BE%84.png" class="">  
+<p>“defines” 中填写的是编译器预定义的宏。这里定义了三个宏，第一个是 UNICODE，第二个是_UNICODE，第三个是__TMS320C28XX__。这三个宏在 driverlib 中会使用到。<br>“compilerPath” 是编译器的路径，添加这个是为了防止 VSCODE 无法跳转某些标准库的头文件，实际上并没有什么用。这个要根据你的安装路径来修改。<br>“intelliSenseMode” 是智能提示模式，这里选择 clang-x64。<br>将 c_cpp_properties.json 文件修改好之后，应该就能正常跳转和补全了，而且不会有红色波浪线报错。    </p>
+<h3 id="让VSCODE正常编译"><a href="#让VSCODE正常编译" class="headerlink" title="让VSCODE正常编译"></a>让 VSCODE 正常编译</h3><h4 id="将gmake添加到环境变量中"><a href="#将gmake添加到环境变量中" class="headerlink" title="将gmake添加到环境变量中"></a>将 gmake 添加到环境变量中</h4><p>要在 VSCODE 中编译 C2000 的工程，本质上还是调用 CCS 的编译器，也就是 gmake。所以我们首先要把 gmake 添加到环境变量中，然后才在 VSCODE 中调用 gmake。<br>gmake 的安装路径也在 CCS 的安装目录下，路径为：</p>
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/gmke%E8%B7%AF%E5%BE%84.png" class="">    
+<p>然后添加到环境变量中：</p>
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F.png" class="">  
+<p>然后重启电脑，在 VSCODE 中打开终端，输入 <code>gmake -v</code>，如果出现 gmake 的版本信息，说明添加成功。</p>
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/gmake%E9%AA%8C%E8%AF%81.png" class="">   
+<h4 id="创建编译脚本"><a href="#创建编译脚本" class="headerlink" title="创建编译脚本"></a>创建编译脚本</h4><p>接下来就是创建一个调用 gmake 的编译脚本，在工程根目录新建一个 build.ps1 文件，文件内容如下：</p>
+<figure class="highlight plaintext"><table><tbody><tr><td class="code"><pre><span class="line">cd ./CPU1_FLASH</span><br><span class="line">gmake -k -j32 all -O</span><br><span class="line">cd ..</span><br></pre></td></tr></tbody></table></figure>
+<p>这个脚本是在 powershell 中执行上述三条代码。其中 <code>cd ./CPU1_FLASH</code> 是进入 CPU1_FLASH 文件夹，因为 makefile 文件在这个目录里面，如果你设置的是烧录到 RAM，就改成 <code>cd ./CPU1_RAM</code>，双核的我暂时还没试过。<code>gmake -k -j32 all -O</code> 是调用 gmake 编译工程。<code>cd ..</code> 是返回上一级目录。<br>添加完文件后在 VSCODE 中打开终端，输入<code>.\build.ps1</code>，如果出现编译信息，说明脚本创建成功。</p>
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E6%89%A7%E8%A1%8C%E7%BC%96%E8%AF%91.png" class="">  
+<p>如果出现报错，查看报错信息，是否存在语法错误；如果报错是找不到变量或函数，而且变量或函数正好在你新添加的文件夹里面，CCS 编译设置中也有包含这个文件夹，可以在 CCS 中先编译一遍，把旧的 makefile 文件路径更新一下，就可以在 VSCODE 中编译了。  </p>
+<h4 id="创建清理脚本"><a href="#创建清理脚本" class="headerlink" title="创建清理脚本"></a>创建清理脚本</h4><p>和上面的编译脚本类似，在工程根目录新建一个 clean.ps1 文件，文件内容如下：</p>
+<pre><code>cd ./CPU1_FLASH
+gmake clean
+cd ..
+</code></pre>
+<h3 id="添加工作区"><a href="#添加工作区" class="headerlink" title="添加工作区"></a>添加工作区</h3><p>在 VSCODE 中打开你的工程，然后在菜单栏上点击文件 -&gt; 将工作区另存为，将工作区保存到你的工程根目录。</p>
+<img src="/2024/10/03/%E5%A6%82%E4%BD%95%E5%9C%A8VSCODE%E4%B8%8A%E7%BC%96%E8%BE%91%E5%B9%B6%E7%BC%96%E8%AF%91C2000%E5%B7%A5%E7%A8%8B/%E4%BF%9D%E5%AD%98%E5%B7%A5%E4%BD%9C%E5%8C%BA.png" class="">
+<p>以后再要打开工程，直接双击打开这个.workspace 后缀的工作区文件即可。</p>
+]]></content>
+      <categories>
+        <category>C2000</category>
+      </categories>
       <tags>
-        <tag>C2000 VSCODE 嵌入式开发</tag>
+        <tag>C2000</tag>
+        <tag>VSCODE</tag>
+        <tag>嵌入式开发</tag>
       </tags>
   </entry>
 </search>
